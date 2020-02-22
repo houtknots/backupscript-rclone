@@ -77,7 +77,7 @@ function_downloadbackupscript () {
 #ask if the user wants to purge the old config, otherwise abort script
 function_newconfig () {
 	while [ "$newconfig_continue" != "true" ]; do
-		echo -e "${YELLOW}Would you like to continue, this will remove your current rclone config!?${NC}"
+		echo -e "${YELLOW}Would you like to continue, this will remove your current backupscript rclone config!?${NC}"
 		read -p '[OVERWRITE CONFIG] (y/n): ' newconfig
 			case $newconfig in
   			y|Y) 
