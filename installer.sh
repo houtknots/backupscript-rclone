@@ -102,7 +102,7 @@ function_protocol () {
 	#Ask the user which protocol he or she wants to use for the file transfer
 	echo -e "${YELLOW}Please select the protocol you would like to use.?${NC}"
 	echo -e " [1] - WebDav"
-	echo -e " [2] - SFTP"
+	echo -e " [2] - SFTP - W.I.P."
 	echo -e " [3] - FTP"
 	echo -e " "
 	read -e -p '[PROTOCOL]: ' -i "$protocol" protocol
@@ -148,6 +148,13 @@ function_remotefolder () {
 	#Ask where to put the files on the remote side
 	echo -e "${YELLOW}Please enter the ${CYAN}remote folder${NC} ${YELLOW}you want to put the backup${NC}"
 		read -e -p '[REMOTE FOLDER]: ' -i "/backupscript/" remotefolder
+	clear
+}
+
+function_remoteport () {
+	#Ask where to put the files on the remote side
+	echo -e "${YELLOW}Please enter the ${CYAN}remote port${NC} ${YELLOW}the scripts needs to contact the remote server on${NC}"
+		read -e -p '[REMOTE PORT]: ' -i "22" remoteport
 	clear
 }
 
@@ -213,8 +220,11 @@ function_settings () {
 	function_username
 	function_password
 	function_localfolder
-	function_localtempfolder
+	function_tempfolder
 	function_remotefolder
+	if [ "$protocol" == "2" ]; then
+		function_remoteport
+	fi
 	function_retention
 	function_cronjob
 }
@@ -293,6 +303,11 @@ if [ $confirm_settings_install == "true" ]; then
 	rclone config update backupscript user $username #set rclone config username
 	rclone config password backupscript pass $password #set rclone config password
 	rclone config update backupscript vendor other #set rclone config vendor
+	if [ "$protocol" == "2" ]; then 
+		rclone config update backupscript port $remoteport #set rclone config port
+		rclone config password backupscript key_file_pass $password #set rclone key_file_pass password
+		rclone config update backupscript use_insecure_cipher false #set rclone config use_insecure_cipher
+	fi
 
 	#Edit the backup.sh file
 	sed -i "s|^localfolder=.*|localfolder=${localfolder}|g" /etc/backup/backupscript/backup.sh #local folder
