@@ -26,53 +26,49 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-function_installpackages () {
-	#Install required packages
-	$PKGINSTALLER install zip -y
-	$PKGINSTALLER install unzip -y
-	$PKGINSTALLER install curl -y
-	curl https://rclone.org/install.sh | sudo bash
+#Install required packages
+$PKGINSTALLER install zip -y
+$PKGINSTALLER install unzip -y
+$PKGINSTALLER install curl -y
+curl https://rclone.org/install.sh | sudo bash
 
-	#Check to OS and declare the package installer
-	declare -A osInfo;
-		osInfo[/etc/redhat-release]=yum
-		osInfo[/etc/arch-release]=pacman
-		osInfo[/etc/gentoo-release]=emerge
-		osInfo[/etc/debian_version]=apt-get
+#Check to OS and declare the package installer
+declare -A osInfo;
+	osInfo[/etc/redhat-release]=yum
+	osInfo[/etc/arch-release]=pacman
+	osInfo[/etc/gentoo-release]=emerge
+	osInfo[/etc/debian_version]=apt-get
 
-	for f in ${!osInfo[@]}
-	do
-    	if [[ -f $f ]];then
-        	echo Package manager: ${osInfo[$f]}
-        	PKGINSTALLER="${osInfo[$f]}"
-	    fi
-	done	
-}
+for f in ${!osInfo[@]}
+do
+   	if [[ -f $f ]];then
+       	echo Package manager: ${osInfo[$f]}
+       	PKGINSTALLER="${osInfo[$f]}"
+    fi
+done	
 
-function_createfolders () {
-	#Check if needed folders exist and create them if they do not exist
-	if [ ! -d "/etc/backup" ]; then
-        	echo -e "${YELLOW}Creating Backup folder...${NC}"
-		mkdir /etc/backup
-	fi
-	if [ ! -d "/etc/backup/backupscript" ]; then
-        	echo -e "${YELLOW}Creating SFTP folder...${NC}"
-        	mkdir /etc/backup/backupscript
-	fi
-	if [ ! -d "/etc/backup/backupscript/temp" ]; then
-		echo -e "${YELLOW}Creating Temp folder...${NC}"
-		mkdir /etc/backup/backupscript/temp
-	fi
-	sleep 1
-	clear
-}
 
-function_downloadbackupscript () {
-	#Download backupscript from github
-	if [ ! -f "/etc/backup/backupscript/backup.sh" ]; then
-		curl https://raw.githubusercontent.com/houtknots/backupscript-rclone/master/backup.sh -o /etc/backup/backupscript/backup.sh
-	fi
-}
+#Check if needed folders exist and create them if they do not exist
+if [ ! -d "/etc/backup" ]; then
+       	echo -e "${YELLOW}Creating Backup folder...${NC}"
+	mkdir /etc/backup
+fi
+if [ ! -d "/etc/backup/backupscript" ]; then
+       	echo -e "${YELLOW}Creating SFTP folder...${NC}"
+       	mkdir /etc/backup/backupscript
+fi
+if [ ! -d "/etc/backup/backupscript/temp" ]; then
+	echo -e "${YELLOW}Creating Temp folder...${NC}"
+	mkdir /etc/backup/backupscript/temp
+fi
+sleep 1
+clear
+
+
+#Download backupscript from github
+if [ ! -f "/etc/backup/backupscript/backup.sh" ]; then
+	curl https://raw.githubusercontent.com/houtknots/backupscript-rclone/master/backup.sh -o /etc/backup/backupscript/backup.sh
+fi
 
 #ask if the user wants to purge the old config, otherwise abort script
 function_newconfig () {
@@ -230,15 +226,9 @@ function_settings () {
 }
 
 #Ask if the user wants to create a new config
-function_preparesystem () {
-	function_installpackages
-	function_createfolders
-	function_downloadbackupscript
-	function_newconfig
-}
+function_newconfig
 
 #Start the settings function
-function_preparesystem
 function_settings
 
 #########################################################
