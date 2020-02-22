@@ -47,6 +47,11 @@ do
     fi
 done	
 
+#Install required packages
+$PKGINSTALLER install zip -y
+$PKGINSTALLER install unzip -y
+$PKGINSTALLER install curl -y
+curl https://rclone.org/install.sh | sudo bash
 
 #Check if needed folders exist and create them if they do not exist
 if [ ! -d "/etc/backup" ]; then
