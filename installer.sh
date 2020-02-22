@@ -6,7 +6,7 @@
 # Github : https://github.com/houtknots
 
 ##########################################################
-##########################################################
+#					   Start Script				         #
 ##########################################################
 
 #Define color codes
@@ -22,7 +22,7 @@ NC='\033[0m'					#Remove Colors in echo
 
 #Check if the user is root or runs the script with sudo
 if [[ $EUID -ne 0 ]]; then
-   echo -e "${RED}Please run this script as root ${NC}- Try to run with sudo or as root user"
+   echo -e "${RED}Please run the script as root ${NC}- Try to run with sudo or as root user"
    exit 1
 fi
 
@@ -181,7 +181,7 @@ function_cronjob () {
 	#Ask if the user wants to install a daily backup
 	while [ "$cronjob_continue" != "true" ]; do
 	echo -e "${YELLOW}Would you like to install a ${CYAN}Daily cronjob${NC} ${YELLOW}for automatic backups? ${NC}"
-		read -p '[RETENTION] (y/n): ' retention
+		read -p '[DAILY CRONJOB] (y/n): ' retention
 			case $retention in
   			y|Y)
 				cronjob_continue="true"
@@ -198,6 +198,7 @@ function_cronjob () {
 			esac
 		clear	
 	done
+
 }
 
 
@@ -242,11 +243,11 @@ while [ "$confirm_settings_continue" != "true" ]; do
 	echo -e "[LOCAL FOLDER]: $localfolder "
 	echo -e "[LOCAL TEMPORY FOLDER]: $tempfolder"
 	echo -e "[REMOTE FOLDER]: $remotefolder"
-	echo -e "[RETENTION]: $cronjob_install"
+	echo -e "[RETENTION]: $retention_value"
 	if [ "retention_value" == "true" ]; then
 		echo -e "[RETENTION DAYS TO KEEP]: $retention_daystostore"
 	fi
-	echo -e "[DAILY CRONJOB]: $cronjob"
+	echo -e "[DAILY CRONJOB]: $cronjob_install"
 	echo -e " "
 	read -p 'Are the above values correct? (y/n): ' confirm_settings
 		case $confirm_settings in
@@ -306,6 +307,8 @@ if [ $confirm_settings_install == "true" ]; then
 		systemctl restart crond
 	fi
 fi
+clear
+
 
 #########################################################
 #              Notify User Install Is Done              #
@@ -314,6 +317,5 @@ fi
 
 #Echo the user how to test the backup
 echo -e "${GREEN}The backup-script is installed use the following command to run the script ${YELLOW}bash /etc/backup/backupscript/backup.sh${NC}"
-echo -e "${GREEN}If you would like the backup to run automaticly you will need to add a cronjob for this."
 
 exit 0

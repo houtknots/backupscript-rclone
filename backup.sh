@@ -6,7 +6,7 @@
 # Github : https://github.com/houtknots
 
 ##########################################################
-##########################################################
+#					   Start Script				         #
 ##########################################################
 
 localfolder=/home/
@@ -16,6 +16,11 @@ tempfolder="/etc/backup/backupscript/temp"
 tempfile="$tempfolder/$currentdate.zip"
 retention="false"
 retention_daystostore="14"
+
+if [[ $EUID -ne 0 ]]; then
+   echo -e "${RED}Please run the script as root ${NC}- Try to run with sudo or as root user"
+   exit 1
+fi
 
 function_timer () {
 	#Countdown timer before starting backup
