@@ -7,10 +7,11 @@ sudo curl https://raw.githubusercontent.com/houtknots/backupscript-rclone/master
 ```
 
 The backup script will be installed in ```/etc/backup/backupscript/```
-<<<<<<< HEAD
 
-If you want to run the script manually u can use the command below 
-```sudo bash /etc/backup/backupscript/backup.sh```
+If you want to run the script manually u can use the command below
+```bash
+sudo bash /etc/backup/backupscript/backup.sh
+```
 
 # Current Features
 * ZIP
