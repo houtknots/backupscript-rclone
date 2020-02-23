@@ -35,8 +35,3 @@ If you want to run the script manually u can use the command below
 * SFTP not working correctly 
 
 May you have any suggestions please create an issue with the *Suggestion* label.
-=======
-If you want to run the script u can use the command below
-
-```sudo bash /etc/backup/backupscript/backup.sh```
->>>>>>> 05df6d12f056eb7fb4f7a287a11ec08a3b509d12
