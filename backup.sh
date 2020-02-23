@@ -22,14 +22,23 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+#If -f value is provided skip the countdown
+if  [[ $1 = "-f" ]]; then
+	skiptimer="true"
+else
+	skiptimer="false"
+fi
+
 function_timer () {
 	#Countdown timer before starting backup
-	secs=$((10))
-	while [ $secs -gt 0 ]; do
-		echo -ne -e "${GREEN}Backup starts in ${RED}$secs ${GREEN}seconds${NC} - ${GREEN}Press ${RED}Control+C ${GREEN}to cancel\033[0K\r ${NC}"
-		sleep 1
-		: $((secs--))
-	done
+	if [ "$skiptimer" == "false" ]; then
+		secs=$((10))
+		while [ $secs -gt 0 ]; do
+			echo -ne -e "${GREEN}Backup starts in ${RED}$secs ${GREEN}seconds${NC} - ${GREEN}Press ${RED}Control+C ${GREEN}to cancel\033[0K\r ${NC}"
+			sleep 1
+			: $((secs--))
+		done
+	fi
 	clear
 }
 

@@ -26,57 +26,62 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-#Install required packages
-$PKGINSTALLER install zip -y
-$PKGINSTALLER install unzip -y
-$PKGINSTALLER install curl -y
-curl https://rclone.org/install.sh | sudo bash
+function_createfolders () {
+	#Check if needed folders exist and create them if they do not exist
+	if [ ! -d "/etc/backup" ]; then
+       		echo -e "${YELLOW}Creating Backup folder...${NC}"
+		mkdir /etc/backup
+	fi
+	if [ ! -d "/etc/backup/backupscript" ]; then
+       		echo -e "${YELLOW}Creating SFTP folder...${NC}"
+       		mkdir /etc/backup/backupscript
+	fi
+	if [ ! -d "/etc/backup/backupscript/temp" ]; then
+		echo -e "${YELLOW}Creating Temp folder...${NC}"
+		mkdir /etc/backup/backupscript/temp
+	fi
+	sleep 1
+	clear
+}
 
-#Check to OS and declare the package installer
-declare -A osInfo;
-	osInfo[/etc/redhat-release]=yum
-	osInfo[/etc/arch-release]=pacman
-	osInfo[/etc/gentoo-release]=emerge
-	osInfo[/etc/debian_version]=apt-get
+function_installpackages () {
+	#Install required packages
+	$PKGINSTALLER install zip -y
+	$PKGINSTALLER install unzip -y
+	$PKGINSTALLER install curl -y
+	curl https://rclone.org/install.sh | sudo bash
 
-for f in ${!osInfo[@]}
-do
-   	if [[ -f $f ]];then
-       	echo Package manager: ${osInfo[$f]}
-       	PKGINSTALLER="${osInfo[$f]}"
-    fi
-done	
+	#Check to OS and declare the package installer
+	declare -A osInfo;
+		osInfo[/etc/redhat-release]=yum
+		osInfo[/etc/arch-release]=pacman
+		osInfo[/etc/gentoo-release]=emerge
+		osInfo[/etc/debian_version]=apt-get
 
-#Install required packages
-$PKGINSTALLER install zip -y
-$PKGINSTALLER install unzip -y
-$PKGINSTALLER install curl -y
-curl https://rclone.org/install.sh | sudo bash
+	for f in ${!osInfo[@]}
+	do
+	   	if [[ -f $f ]];then
+       		echo Package manager: ${osInfo[$f]}
+       		PKGINSTALLER="${osInfo[$f]}"
+    	fi
+	done	
 
-#Check if needed folders exist and create them if they do not exist
-if [ ! -d "/etc/backup" ]; then
-       	echo -e "${YELLOW}Creating Backup folder...${NC}"
-	mkdir /etc/backup
-fi
-if [ ! -d "/etc/backup/backupscript" ]; then
-       	echo -e "${YELLOW}Creating SFTP folder...${NC}"
-       	mkdir /etc/backup/backupscript
-fi
-if [ ! -d "/etc/backup/backupscript/temp" ]; then
-	echo -e "${YELLOW}Creating Temp folder...${NC}"
-	mkdir /etc/backup/backupscript/temp
-fi
-sleep 1
-clear
+	#Install required packages
+	$PKGINSTALLER install zip -y
+	$PKGINSTALLER install unzip -y
+	$PKGINSTALLER install curl -y
+	curl https://rclone.org/install.sh | sudo bash
+
+	#Download backupscript from github
+	if [ ! -f "/etc/backup/backupscript/backup.sh" ]; then
+		curl https://raw.githubusercontent.com/houtknots/backupscript-rclone/master/backup.sh -o /etc/backup/backupscript/backup.sh
+	fi
+	clear
+}
 
 
-#Download backupscript from github
-if [ ! -f "/etc/backup/backupscript/backup.sh" ]; then
-	curl https://raw.githubusercontent.com/houtknots/backupscript-rclone/master/backup.sh -o /etc/backup/backupscript/backup.sh
-fi
-
-#ask if the user wants to purge the old config, otherwise abort script
 function_newconfig () {
+	#ask if the user wants to purge the old config, otherwise abort script
 	while [ "$newconfig_continue" != "true" ]; do
 		echo -e "${YELLOW}Would you like to continue, this will remove your current backupscript rclone config!?${NC}"
 		read -p '[OVERWRITE CONFIG] (y/n): ' newconfig
@@ -101,10 +106,12 @@ function_newconfig () {
 
 function_protocol () {
 	#Ask the user which protocol he or she wants to use for the file transfer
-	echo -e "${YELLOW}Please select the protocol you would like to use.?${NC}"
+	echo -e "${YELLOW}Please select the ${CYAN}protocol ${YELLOW}you would like to use.?${NC}"
 	echo -e " [1] - WebDav"
-	echo -e " [2] - SFTP - W.I.P."
+	echo -e " [2] - SFTP "
 	echo -e " [3] - FTP"
+#	echo -e " [4] - RSYNC"
+#	echo -e " [5] - OPENSTACK SWIFT"
 	echo -e " "
 	read -e -p '[PROTOCOL]: ' -i "$protocol" protocol
 	clear
@@ -216,22 +223,27 @@ function_cronjob () {
 
 #Start the settings configuration
 function_settings () {
-	function_protocol
-	function_hostname
-	function_username
-	function_password
-	function_localfolder
-	function_tempfolder
-	function_remotefolder
-	if [ "$protocol" == "2" ]; then
-		function_remoteport
-	fi
-	function_retention
-	function_cronjob
+	function_protocol #Ask which protocol to use
+	function_hostname #Ask what hostname to use
+	function_username #Ask what username to use
+	function_password #Ask what password to use
+	function_localfolder #Ask which folder to backup
+	function_tempfolder #Ask which temp folder to use
+	function_remotefolder #Ask where to place the backup on the remote side
+	if [ "$protocol" == "2" ]; then function_remoteport; fi #Ask which port to use 
+	function_retention #Ask if the users wants to use retention on the remote side
+	function_cronjob #Ask if the users want to add a daily cronjob for automatic backups
 }
 
 #Ask if the user wants to create a new config
-function_newconfig
+function_install () {
+	function_createfolders
+	function_installpackages
+	function_newconfig
+}
+
+#Start the install function
+function_install
 
 #Start the settings function
 function_settings
@@ -249,9 +261,7 @@ while [ "$confirm_settings_continue" != "true" ]; do
 	echo -e "[LOCAL TEMPORY FOLDER]: $tempfolder"
 	echo -e "[REMOTE FOLDER]: $remotefolder"
 	echo -e "[RETENTION]: $retention_value"
-	if [ "retention_value" == "true" ]; then
-		echo -e "[RETENTION DAYS TO KEEP]: $retention_daystostore"
-	fi
+	if [ "retention_value" == "true" ]; then echo -e "[RETENTION DAYS TO KEEP]: $retention_daystostore"; fi
 	echo -e "[DAILY CRONJOB]: $cronjob_install"
 	echo -e " "
 	read -p 'Are the above values correct? (y/n): ' confirm_settings
@@ -263,13 +273,15 @@ while [ "$confirm_settings_continue" != "true" ]; do
 	  	n|N)
 			confirm_settings_continue="false"
 			confirm_settings_install="false"
-			echo -e "Please revisit your settings"
-			2
+			echo -e "${RED}Please revisit your settings${NC}"
+			sleep 2
 			function_settings
 		;;
   		*) 
 			confirm_settings_continue="false"
 			confirm_settings_install="false"
+			echo -e "${RED}Invalid option provided${NC}"
+			sleep 2
 		;;
 		esac
 	clear	
@@ -327,5 +339,6 @@ clear
 
 #Echo the user how to test the backup
 echo -e "${GREEN}The backup-script is installed use the following command to run the script ${YELLOW}bash /etc/backup/backupscript/backup.sh${NC}"
+if [ "retention_value" == "true" ]; then echo -e "${GREEN}The backupscript will be ran every day at ${YELLOW}03:00 am${NC}"; fi
 
 exit 0
