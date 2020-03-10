@@ -14,6 +14,7 @@ remotefolder=/backupscript/
 currentdate=$(date +"%Y-%m-%d_%H-%M-%S")
 tempfolder="/etc/backup/backupscript/temp"
 tempfile="$tempfolder/$currentdate.zip"
+usezip="false"
 retention="false"
 retention_daystostore="14"
 
@@ -57,12 +58,18 @@ function_createfolder () {
 }
 
 function_zipfiles () {
-	zip -r $tempfile $localfolder
+	if [ "$usezip" == "true" ]; then
+		zip -r $tempfile $localfolder
+	fi
 }
 
 function_upload () {
 	#Backup the files to a remote location
-	rclone copy $tempfile backupscript:$remotefolder --progress -q --log-file=/etc/backup/backupscript/backup.log
+	if [ "$usezip" == "true" ]; then
+		rclone copy $tempfile backupscript:$remotefolder --progress -q --log-file=/etc/backup/backupscript/backup.log
+	else
+		rclone copy $localfolder backupscript:$remotefolder/$currentdate/ --progress -q --log-file=/etc/backup/backupscript/backup.log
+	fi
 }
 
 function_deltempfiles () {

@@ -159,6 +159,13 @@ function_remotefolder () {
 	clear
 }
 
+function_usezip () {
+	#Ask where to put the files on the remote side
+	echo -e "${YELLOW}Please enter the ${CYAN}remote folder${NC} ${YELLOW}you want to put the backup${NC}"
+		read -e -p '[USE ZIP] (y/n): ' -i "true" usezip
+	clear
+}
+
 function_remoteport () {
 	#Ask where to put the files on the remote side
 	echo -e "${YELLOW}Please enter the ${CYAN}remote port${NC} ${YELLOW}the scripts needs to contact the remote server on${NC}"
@@ -230,7 +237,8 @@ function_settings () {
 	function_localfolder #Ask which folder to backup
 	function_tempfolder #Ask which temp folder to use
 	function_remotefolder #Ask where to place the backup on the remote side
-	if [ "$protocol" == "2" ]; then function_remoteport; fi #Ask which port to use 
+	if [ "$protocol" == "2" ]; then function_remoteport; fi #Ask which port to use
+	function_usezip #Ask to use ZIP of just upload the folder
 	function_retention #Ask if the users wants to use retention on the remote side
 	function_cronjob #Ask if the users want to add a daily cronjob for automatic backups
 }
@@ -260,6 +268,7 @@ while [ "$confirm_settings_continue" != "true" ]; do
 	echo -e "[LOCAL FOLDER]: $localfolder "
 	echo -e "[LOCAL TEMPORY FOLDER]: $tempfolder"
 	echo -e "[REMOTE FOLDER]: $remotefolder"
+	echo -e "[USE ZIP]:  $usezip"
 	echo -e "[RETENTION]: $retention_value"
 	if [ "retention_value" == "true" ]; then echo -e "[RETENTION DAYS TO KEEP]: $retention_daystostore"; fi
 	echo -e "[DAILY CRONJOB]: $cronjob_install"
@@ -320,6 +329,7 @@ if [ $confirm_settings_install == "true" ]; then
 	sed -i "s|^localfolder=.*|localfolder=${localfolder}|g" /etc/backup/backupscript/backup.sh #local folder
 	sed -i "s|^tempfolder=.*|tempfolder=${tempfolder}|g" /etc/backup/backupscript/backup.sh #temp folder
 	sed -i "s|^remotefolder=.*|remotefolder=${remotefolder}|g" /etc/backup/backupscript/backup.sh #remote folder
+	sed -i "s|^usezip=.*|usezip=${usezip}|g" /etc/backup/backupscript/backup.sh #usezip
 	sed -i "s|^retention=.*|retention=${retention_value}|g" /etc/backup/backupscript/backup.sh #retention
 	sed -i "s|^retention_daystostore=.*|retention_daystostore=${retention_daystostore}|g" /etc/backup/backupscript/backup.sh #retention
 
