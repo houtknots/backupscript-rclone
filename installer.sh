@@ -159,17 +159,28 @@ function_remotefolder () {
 	clear
 }
 
-function_usezip () {
-	#Ask where to put the files on the remote side
-	echo -e "${YELLOW}Please enter the ${CYAN}remote folder${NC} ${YELLOW}you want to put the backup${NC}"
-		read -e -p '[USE ZIP] (y/n): ' -i "true" usezip
-	clear
-}
-
 function_remoteport () {
 	#Ask where to put the files on the remote side
 	echo -e "${YELLOW}Please enter the ${CYAN}remote port${NC} ${YELLOW}the scripts needs to contact the remote server on${NC}"
 		read -e -p '[REMOTE PORT]: ' -i "22" remoteport
+	clear
+}
+
+function_usezip () {
+	#Ask where to put the files on the remote side
+	echo -e "${YELLOW}Please enter the ${CYAN}remote folder${NC} ${YELLOW}you want to put the backup${NC}"
+		read -e -p '[USE ZIP] (y/n): ' -i "true" usezip
+		case $usezip in
+  			y|Y)
+				usezip_value="true"
+			;;
+	  		n|N)
+				usezip_value="false"
+			;;
+  			*) 
+				usezip_value="false"
+			;;
+			esac
 	clear
 }
 
@@ -329,7 +340,7 @@ if [ $confirm_settings_install == "true" ]; then
 	sed -i "s|^localfolder=.*|localfolder=${localfolder}|g" /etc/backup/backupscript/backup.sh #local folder
 	sed -i "s|^tempfolder=.*|tempfolder=${tempfolder}|g" /etc/backup/backupscript/backup.sh #temp folder
 	sed -i "s|^remotefolder=.*|remotefolder=${remotefolder}|g" /etc/backup/backupscript/backup.sh #remote folder
-	sed -i "s|^usezip=.*|usezip=${usezip}|g" /etc/backup/backupscript/backup.sh #usezip
+	sed -i "s|^usezip=.*|usezip=${usezip_value}|g" /etc/backup/backupscript/backup.sh #usezip
 	sed -i "s|^retention=.*|retention=${retention_value}|g" /etc/backup/backupscript/backup.sh #retention
 	sed -i "s|^retention_daystostore=.*|retention_daystostore=${retention_daystostore}|g" /etc/backup/backupscript/backup.sh #retention
 
