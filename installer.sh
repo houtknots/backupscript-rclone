@@ -279,7 +279,7 @@ while [ "$confirm_settings_continue" != "true" ]; do
 	echo -e "[LOCAL FOLDER]: $localfolder "
 	echo -e "[LOCAL TEMPORY FOLDER]: $tempfolder"
 	echo -e "[REMOTE FOLDER]: $remotefolder"
-	echo -e "[USE ZIP]:  $usezip"
+	echo -e "[USE ZIP]:  $usezip_value"
 	echo -e "[RETENTION]: $retention_value"
 	if [ "retention_value" == "true" ]; then echo -e "[RETENTION DAYS TO KEEP]: $retention_daystostore"; fi
 	echo -e "[DAILY CRONJOB]: $cronjob_install"
