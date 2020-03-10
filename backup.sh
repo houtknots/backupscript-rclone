@@ -74,20 +74,23 @@ function_upload () {
 
 function_deltempfiles () {
 #Delete temp files when done
-	if [ -f "$tempfile" ];
+	if [ "$usezip" == "true" ];
 	then
-		rm -rf $tempfile
 		if [ -f "$tempfile" ];
 		then
-			echo -e "${RED}Cleanup failed${NC} - Start the script again with ${YELLOW}-c ${NC}To restart the cleanup proccess"
-			echo -e "${RED}Cleanup failed${NC} - Start the script again with ${YELLOW}-c ${NC}To restart the cleanup proccess" > /etc/backup/backupscript/backup.log
-			exit 1
+			rm -rf $tempfile
+			if [ -f "$tempfile" ];
+			then
+				echo -e "${RED}Cleanup failed${NC} - Start the script again with ${YELLOW}-c ${NC}To restart the cleanup proccess"
+				echo -e "${RED}Cleanup failed${NC} - Start the script again with ${YELLOW}-c ${NC}To restart the cleanup proccess" > /etc/backup/backupscript/backup.log
+				exit 1
+			else
+				echo -e "${GREEN}Cleanup Succesfull${NC}"
+			fi
 		else
-			echo -e "${GREEN}Cleanup Succesfull${NC}"
+			echo -e "${RED}No File found or we had insufficient permissions${NC} - Run the script again with ${YELLOW}-c ${NC}To restart the cleanup proccess"
+			echo -e "${RED}No File found or we had insufficient permissions${NC} - Run the script again with ${YELLOW}-c ${NC}To restart the cleanup proccess" > /etc/backup/backupscript/backup.log
 		fi
-	else
-		echo -e "${RED}No File found or we had insufficient permissions${NC} - Run the script again with ${YELLOW}-c ${NC}To restart the cleanup proccess"
-		echo -e "${RED}No File found or we had insufficient permissions${NC} - Run the script again with ${YELLOW}-c ${NC}To restart the cleanup proccess" > /etc/backup/backupscript/backup.log
 	fi
 }
 
