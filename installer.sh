@@ -169,7 +169,7 @@ function_remoteport () {
 function_usezip () {
 	#Ask where to put the files on the remote side
 	echo -e "${YELLOW}Please enter the ${CYAN}remote folder${NC} ${YELLOW}you want to put the backup${NC}"
-		read -e -p '[USE ZIP] (y/n): ' -i "true" usezip
+		read -e -p '[USE ZIP] (y/n): ' usezip
 		case $usezip in
   			y|Y)
 				usezip_value="true"
