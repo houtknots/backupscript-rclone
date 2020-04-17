@@ -21,7 +21,7 @@ NC='\033[0m'					#Remove Colors in echo
 #DATE=$(date +"%Y-%m-%d_%H-%M-%S")
 
 #Get Server Hostname
-hostname="`hostname`"
+hostname_server="`hostname`"
 
 #Check if the user is root or runs the script with sudo
 if [[ $EUID -ne 0 ]]; then
@@ -122,7 +122,7 @@ function_protocol () {
 
 function_hostname () {
 	#Ask for the hostname
-	echo -e "${YELLOW}Please enter your ${CYAN}remote hostname or IP ${YELLOW}and press enter${NC}"
+	echo -e "${YELLOW}Please enter your ${CYAN}remote hostname or IP ${YELLOW}and press enter - the backup will be made to this location${NC}"
 		read -e -p '[HOSTNAME]: ' -i "$hostname" hostname
 	clear
 }
@@ -158,7 +158,7 @@ function_tempfolder () {
 function_remotefolder () {
 	#Ask where to put the files on the remote side
 	echo -e "${YELLOW}Please enter the ${CYAN}remote folder${NC} ${YELLOW}you want to put the backup${NC}"
-		read -e -p '[REMOTE FOLDER]: ' -i "$hostname" remotefolder
+		read -e -p '[REMOTE FOLDER]: ' -i "$hostname_server" remotefolder
 	clear
 }
 
