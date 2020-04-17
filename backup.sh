@@ -16,11 +16,15 @@ tempfolder="/etc/backup/backupscript/temp"
 tempfile="$tempfolder/$currentdate.zip"
 hostname="`hostname`"
 
+discord_slack_webhook=""
+
 usezip="false"
 checksum="false"
 retention="false"
 retention_daystostore="14"
 report_errors="false"
+
+discord_slack_notifications="false"
 
 #Check if the script runs as root or with sudo
 if [[ $EUID -ne 0 ]];
@@ -132,6 +136,10 @@ function_report_errors () {
 		if [ -s "/etc/backup/backupscript/backup.log" ]
 		then
 			echo "There are errors in the error log"
+			if [ "$discord_slack_notifications" == "true" ];
+			then
+				curl -H "Content-Type: application/json" -X POST -d "{\"username\": \"$hostname\", \"content\": \"De backup van $currentdate\"}" $discord_slack_webhook
+			fi
 		else
 			echo "Jeeej there are no errors"
 		fi		
