@@ -20,6 +20,9 @@ NC='\033[0m'					#Remove Colors in echo
 #Check the date
 #DATE=$(date +"%Y-%m-%d_%H-%M-%S")
 
+#Get Server Hostname
+hostname="`hostname`"
+
 #Check if the user is root or runs the script with sudo
 if [[ $EUID -ne 0 ]]; then
    echo -e "${RED}Please run the script as root ${NC}- Try to run with sudo or as root user"
@@ -155,7 +158,7 @@ function_tempfolder () {
 function_remotefolder () {
 	#Ask where to put the files on the remote side
 	echo -e "${YELLOW}Please enter the ${CYAN}remote folder${NC} ${YELLOW}you want to put the backup${NC}"
-		read -e -p '[REMOTE FOLDER]: ' -i "/backupscript/" remotefolder
+		read -e -p '[REMOTE FOLDER]: ' -i "$hostname" remotefolder
 	clear
 }
 
@@ -167,8 +170,8 @@ function_remoteport () {
 }
 
 function_usezip () {
-	#Ask where to put the files on the remote side
-	echo -e "${YELLOW}Please enter the ${CYAN}remote folder${NC} ${YELLOW}you want to put the backup${NC}"
+	#Ask if the user would like to use the zip function
+	echo -e "${YELLOW}Would you like the use the zip function, this requires extra space on your local instance but uses less space on the remote side${NC}"
 		read -e -p '[USE ZIP] (y/n): ' usezip
 		case $usezip in
   			y|Y)
@@ -179,6 +182,24 @@ function_usezip () {
 			;;
   			*) 
 				usezip_value="false"
+			;;
+			esac
+	clear
+}
+
+function_checksum () {
+	#Ask if the user would like a md5 check 
+	echo -e "${YELLOW}Would you like to use a ${CYAN}md5 check${NC} ${YELLOW}we only recommend this option if your localfolder does not use active changing${NC}"
+		read -e -p '[USE CHECKSUM] (y/n): ' usechecksum
+		case $usechecksum in
+  			y|Y)
+				usechecksum_value="true"
+			;;
+	  		n|N)
+				usechecksum_value="false"
+			;;
+  			*) 
+				usechecksum_value="false"
 			;;
 			esac
 	clear
@@ -250,6 +271,7 @@ function_settings () {
 	function_remotefolder #Ask where to place the backup on the remote side
 	if [ "$protocol" == "2" ]; then function_remoteport; fi #Ask which port to use
 	function_usezip #Ask to use ZIP of just upload the folder
+	function_checksum
 	function_retention #Ask if the users wants to use retention on the remote side
 	function_cronjob #Ask if the users want to add a daily cronjob for automatic backups
 }
@@ -280,6 +302,7 @@ while [ "$confirm_settings_continue" != "true" ]; do
 	echo -e "[LOCAL TEMPORY FOLDER]: $tempfolder"
 	echo -e "[REMOTE FOLDER]: $remotefolder"
 	echo -e "[USE ZIP]:  $usezip_value"
+	echo -e "[USE FILE CHECK]:  $usechecksum_value"
 	echo -e "[RETENTION]: $retention_value"
 	if [ "retention_value" == "true" ]; then echo -e "[RETENTION DAYS TO KEEP]: $retention_daystostore"; fi
 	echo -e "[DAILY CRONJOB]: $cronjob_install"
@@ -341,6 +364,7 @@ if [ $confirm_settings_install == "true" ]; then
 	sed -i "s|^tempfolder=.*|tempfolder=${tempfolder}|g" /etc/backup/backupscript/backup.sh #temp folder
 	sed -i "s|^remotefolder=.*|remotefolder=${remotefolder}|g" /etc/backup/backupscript/backup.sh #remote folder
 	sed -i "s|^usezip=.*|usezip=${usezip_value}|g" /etc/backup/backupscript/backup.sh #usezip
+	sed -i "s|^checksum=.*|checksum=${usechecksum_value}|g" /etc/backup/backupscript/backup.sh #checksum
 	sed -i "s|^retention=.*|retention=${retention_value}|g" /etc/backup/backupscript/backup.sh #retention
 	sed -i "s|^retention_daystostore=.*|retention_daystostore=${retention_daystostore}|g" /etc/backup/backupscript/backup.sh #retention
 
