@@ -138,7 +138,7 @@ function_report_errors () {
 			echo "There are errors in the error log"
 			if [ "$discord_slack_notifications" == "true" ];
 			then
-				curl -H "Content-Type: application/json" -X POST -d "{\"username\": \"$hostname\", \"content\": \"De backup van $currentdate\"}" $discord_slack_webhook
+				curl -H "Content-Type: application/json" -X POST -d "{\"username\": \"Backupscript\",\"content\": \"@here\", \"embeds\":[{\"title\": \"$hostname\",\"description\": \"De backup van $currentdate is mislukt\",\"color\": 16711680}]}" $discord_slack_webhook
 			fi
 		else
 			echo "Jeeej there are no errors"
@@ -160,7 +160,6 @@ function_upload
 function_checksum
 function_deltempfiles
 function_retention
-
 
 function_report_errors
 
