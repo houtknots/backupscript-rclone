@@ -163,7 +163,7 @@ function_remotefolder () {
 }
 
 function_remoteport () {
-	#Ask where to put the files on the remote side
+	#Ask which port to use for the remote connection
 	echo -e "${YELLOW}Please enter the ${CYAN}remote port${NC} ${YELLOW}the scripts needs to contact the remote server on${NC}"
 		read -e -p '[REMOTE PORT]: ' -i "22" remoteport
 	clear

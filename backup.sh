@@ -91,9 +91,9 @@ function_checksum () {
 	#Check the files from the remote folder are the the same as the local ones
 	if [ "$checksum" == "true" ]; 
 	then
-		rclone check $tempfile backupscript:$remotefolder -q --log-file=/etc/backup/backupscript/backup.log
-	else
 		rclone check $localfolder backupscript:$remotefolder/$currentdate/ -q --log-file=/etc/backup/backupscript/backup.log
+	else
+		rclone check $tempfile backupscript:$remotefolder -q --log-file=/etc/backup/backupscript/backup.log
 	fi
 }
 
