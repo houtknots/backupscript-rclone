@@ -48,12 +48,6 @@ function_createfolders () {
 }
 
 function_installpackages () {
-	#Install required packages
-	$PKGINSTALLER install zip -y
-	$PKGINSTALLER install unzip -y
-	$PKGINSTALLER install curl -y
-	curl https://rclone.org/install.sh | sudo bash
-
 	#Check to OS and declare the package installer
 	declare -A osInfo;
 		osInfo[/etc/redhat-release]=yum
@@ -92,14 +86,19 @@ function_newconfig () {
   			y|Y) 
 				newconfig_continue="true"
 				rclone config delete backupscript
+				#Check if the cronjob allready exists, if so clear the content
+				if [ -f /etc/cron.d/backupscript ];
+				then
+					true > /etc/cron.d/backupscript
+				fi
 			;;
 	  		n|N)
-				echo "Please use the commands to edit the rclone config"
+				echo "Please edit the backup config directly within the script /etc/backup/backupscripts/backup.sh"
 				newconfig_continue="true"
 				exit 0
 			;;
   			*) 	
-				echo "Please enter y or n"
+				echo "Please enter y or n to continue"
 				newconfig_continue="false"
 			;;  
 			esac
@@ -231,6 +230,56 @@ function_retention () {
 	done
 }
 
+function_notifications () {
+	#Ask if the user wants to install a daily backup
+	while [ "$notifications_continue" != "true" ]; do
+	echo -e "${YELLOW}Would you like to use ${CYAN}notifications${NC} ${YELLOW}? - Discord ${NC}"
+		read -p '[USE NOTIFICATIONS] (y/n): ' notifications
+			case $notifications in
+  			y|Y)
+			  	notifications_continue="true"
+				use_notifications="true"
+			;;
+	  		n|N)
+			  	notifications_continue="true"
+				use_notifications="false"
+			;;
+  			*) 
+			  	notifications_continue="false"
+				use_notifications="false"
+			;;
+			esac
+		clear	
+	done
+
+	if [ "$use_notifications" == "true" ];
+	then
+		while [ "$notifications_discord_continue" != "true" ]; do
+		echo -e "${YELLOW}Would you like to use ${CYAN}Discord${NC} ${YELLOW}notifcations? ${NC}"
+			read -p '[USE DISCORD NOTIFICATIONS] (y/n): ' discordnotifications
+				case $discordnotifications in
+				y|Y)
+					clear
+					notifications_discord_continue="true"
+					use_discordnotifications="true"
+					read -p '[DISCORD WEBHOOK URL]: ' notifications_discordwebhook
+				;;
+				n|N)
+					notifications_discord_continue="true"
+					use_discordnotifications="false"
+				;;
+				*) 
+					notifications_discord_continue="false"
+					use_discordnotifications="false"
+				;;
+				esac
+			clear	
+		done
+	fi
+
+
+}
+
 function_cronjob () {
 	#Ask if the user wants to install a daily backup
 	while [ "$cronjob_continue" != "true" ]; do
@@ -273,6 +322,7 @@ function_settings () {
 	function_usezip #Ask to use ZIP of just upload the folder
 	function_checksum
 	function_retention #Ask if the users wants to use retention on the remote side
+	function_notifications #Ask if the user want to use notifications
 	function_cronjob #Ask if the users want to add a daily cronjob for automatic backups
 }
 
@@ -304,6 +354,10 @@ while [ "$confirm_settings_continue" != "true" ]; do
 	echo -e "[USE ZIP]:  $usezip_value"
 	echo -e "[USE FILE CHECK]:  $usechecksum_value"
 	echo -e "[RETENTION]: $retention_value"
+	echo -e "[NOTIFICATIONS]: $use_notifications"
+	echo -e "[DISCORD NOTIFICATIONS]: $use_discordnotifications"
+
+
 	if [ "retention_value" == "true" ]; then echo -e "[RETENTION DAYS TO KEEP]: $retention_daystostore"; fi
 	echo -e "[DAILY CRONJOB]: $cronjob_install"
 	echo -e " "
@@ -368,9 +422,14 @@ if [ $confirm_settings_install == "true" ]; then
 	sed -i "s|^retention=.*|retention=${retention_value}|g" /etc/backup/backupscript/backup.sh #retention
 	sed -i "s|^retention_daystostore=.*|retention_daystostore=${retention_daystostore}|g" /etc/backup/backupscript/backup.sh #retention
 
+	sed -i "s|^report_errors=.*|report_errors=${use_notifications}|g" /etc/backup/backupscript/backup.sh #Turn on notifications
+
+	sed -i "s|^discord_slack_notifications=.*|discord_slack_notifications=${use_discordnotifications}|g" /etc/backup/backupscript/backup.sh #Turn on discord/slack notifications
+	sed -i "s|^discord_slack_webhook=.*|discord_slack_webhook=${notifications_discordwebhook}|g" /etc/backup/backupscript/backup.sh #discordwebhook
+
 	if [ "$cronjob_install" == "true" ]; then
 		touch /etc/cron.d/backupscript
-		echo "0 3 * * * root bash /etc/backup/backupscript/backup.sh" >> /etc/cron.d/backupscript
+		echo "0 3 * * * root bash /etc/backup/backupscript/backup.sh" > /etc/cron.d/backupscript
 		systemctl restart crond
 	fi
 fi

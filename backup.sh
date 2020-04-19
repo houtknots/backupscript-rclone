@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Project: Rclone backup script
 # Author : houtknots
@@ -6,9 +6,10 @@
 # Github : https://github.com/houtknots
 
 ##########################################################
-# 					     Script				             #
+# 					     Settings			             #
 ##########################################################
 
+#Folder settings
 localfolder=/home/
 remotefolder=/backupscript/
 currentdate=$(date +"%Y-%m-%d_%H-%M-%S")
@@ -16,15 +17,24 @@ tempfolder="/etc/backup/backupscript/temp"
 tempfile="$tempfolder/$currentdate.zip"
 hostname="`hostname`"
 
+#Notifications
 discord_slack_webhook=""
+report_errors=false
+discord_slack_notifications=false
 
-usezip="false"
-checksum="false"
-retention="false"
+#Retention
 retention_daystostore="14"
-report_errors="false"
+retention=false
 
-discord_slack_notifications="false"
+#Zip
+usezip=false
+
+#Filecheck
+checksum=false
+
+##########################################################
+# 					     Script				             #
+##########################################################
 
 #Check if the script runs as root or with sudo
 if [[ $EUID -ne 0 ]];
@@ -41,14 +51,14 @@ else
 	skiptimer="false"
 fi
 
-function_timer () {
+function_start_countdowntimer () {
 	#Countdown timer before starting backup
 	if [ "$skiptimer" == "false" ];
 	then
 		secs=$((10))
 		while [ $secs -gt 0 ];
 		do
-			echo -ne -e "${GREEN}Backup starts in ${RED}$secs ${GREEN}seconds${NC} - ${GREEN}Press ${RED}Control+C ${GREEN}to cancel\033[0K\r ${NC}"
+			echo -ne -e "Backup starts in $secs seconds - Press Control+C to cancel"
 			sleep 1
 			: $((secs--))
 		done
@@ -90,10 +100,12 @@ function_upload () {
 function_checksum () {
 	#Check the files from the remote folder are the the same as the local ones
 	if [ "$checksum" == "true" ]; 
-	then
-		rclone check $localfolder backupscript:$remotefolder/$currentdate/ -q --log-file=/etc/backup/backupscript/backup.log
-	else
-		rclone check $tempfile backupscript:$remotefolder -q --log-file=/etc/backup/backupscript/backup.log
+		if [ "$usezip" == "true" ];
+		then
+			rclone check $tempfile backupscript:$remotefolder -q --log-file=/etc/backup/backupscript/backup.log
+		else
+			rclone check $localfolder backupscript:$remotefolder/$currentdate/ -q --log-file=/etc/backup/backupscript/backup.log
+		fi
 	fi
 }
 
@@ -128,30 +140,50 @@ function_retention () {
 	fi
 }
 
+function_starttimer () {
+	#Start the timer
+	Timer="$(date +%s)"
+}
+
+function_stoptimer () {
+	#Stop the timer
+	Timer="$(($(date +%s)-T))"
+	TimeElapsed="$(($Timer / 3600))hrs $((($Timer / 60) % 60))min $(($Timer % 60))sec"
+	echo "The backup has finished it took $TimeElapsed"
+}
+
 function_report_errors () {
 	#Check if the report errors function is true
 	if [ "$report_errors" == "true" ];
 	then
-		#Check if the backupscript logs are empty
-		if [ -s "/etc/backup/backupscript/backup.log" ]
+		if [ "$discord_slack_notifications" == "true" ];
 		then
-			echo "There are errors in the error log"
-			if [ "$discord_slack_notifications" == "true" ];
+			#Check if the backupscript logs are empty
+			if [ -s "/etc/backup/backupscript/backup.log" ]
 			then
-				curl -H "Content-Type: application/json" -X POST -d "{\"username\": \"Backupscript\",\"content\": \"@here\", \"embeds\":[{\"title\": \"$hostname\",\"description\": \"De backup van $currentdate is mislukt\",\"color\": 16711680}]}" $discord_slack_webhook
+				curl -H "Content-Type: application/json" -X POST -d "{\"username\":\"Backupscript\", \"embeds\":[{\"title\":\"$hostname\",\"description\":\"The backup of $currentdate failed it took $TimeElapsed\",\"color\":16711680}]}" $discord_slack_webhook
+			else
+				curl -H "Content-Type: application/json" -X POST -d "{\"username\":\"Backupscript\", \"embeds\":[{\"title\":\"$hostname\",\"description\":\"The backup of $currentdate finished successfully it took $TimeElapsed\",\"color\":655104}]}" $discord_slack_webhook
 			fi
-		else
-			echo "Jeeej there are no errors"
-		fi		
+		fi
 	fi
 }
 
+function_historylog () {
+	if [ -s "/etc/backup/backupscript/history.log" ]
+	then
+		echo [FAILED] - $currentdate - Please check the backup.log file to see the errors >> /etc/backup/backupscript/history.log
+	else
+		echo [FINISHED] - $currentdate >> /etc/backup/backupscript/history.log
+	fi
+}
 #########################################################
-#                Start the backupscript                 #
+#                     Start Backups			            #
 #########################################################
 
 
-function_timer
+function_start_countdowntimer
+function_starttimer
 function_clearlog
 function_createfolder
 function_zipfiles
@@ -161,6 +193,8 @@ function_checksum
 function_deltempfiles
 function_retention
 
+function_stoptimer
 function_report_errors
+function_historylog
 
 exit 0

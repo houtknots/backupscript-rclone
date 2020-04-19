@@ -1,9 +1,9 @@
 # Backupscript rclone
- Backupscript based on [RClone](https://rclone.org/ "rclone.org")
+Backupscript based on [RClone](https://rclone.org/ "rclone.org")
 
 Run the following commando to download and run the installer 
 ```bash
-sudo curl https://raw.githubusercontent.com/houtknots/backupscript-rclone/master/installer.sh -o installer.sh && sudo bash installer.sh
+bash <(curl https://raw.githubusercontent.com/houtknots/backupscript-rclone/master/installer.sh)
 ```
 
 The backup script will be installed in ```/etc/backup/backupscript/```
@@ -18,6 +18,8 @@ sudo bash /etc/backup/backupscript/backup.sh
 * WebDav | FTP | SFTP 
 * Daily Cronjob
 * Retention
+* Notifications with Discord Webhook
+* Run time timer
 
 # Features Planed to be added/remade
 * Graphical menu (commandline menu)
@@ -25,7 +27,6 @@ sudo bash /etc/backup/backupscript/backup.sh
 * History Log
 * Backup restore function
 * Add option for TAR instead of ZIP
-* Notifications via Webhooks (Slack,Discord)
 * Notifications via Email
 * Checking for updates
 * Error Handling
