@@ -58,7 +58,7 @@ function_start_countdowntimer () {
 		secs=$((10))
 		while [ $secs -gt 0 ];
 		do
-			echo -ne -e "Backup starts in $secs seconds - Press Control+C to cancel"
+			echo -ne -e "${GREEN}Backup starts in ${RED}$secs ${GREEN}seconds${NC} - ${GREEN}Press ${RED}Control+C ${GREEN}to cancel\033[0K\r ${NC}"
 			sleep 1
 			: $((secs--))
 		done
@@ -97,6 +97,7 @@ function_upload () {
 		rclone copy $localfolder backupscript:$remotefolder/$currentdate/ --progress -q --log-file=/etc/backup/backupscript/backup.log
 	fi
 }
+
 function_checksum () {
 	#Check the files from the remote folder are the the same as the local ones
 	if [ "$checksum" == "true" ]; 
