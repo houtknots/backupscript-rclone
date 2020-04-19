@@ -100,6 +100,7 @@ function_upload () {
 function_checksum () {
 	#Check the files from the remote folder are the the same as the local ones
 	if [ "$checksum" == "true" ]; 
+	then
 		if [ "$usezip" == "true" ];
 		then
 			rclone check $tempfile backupscript:$remotefolder -q --log-file=/etc/backup/backupscript/backup.log
