@@ -149,7 +149,7 @@ function_starttimer () {
 
 function_stoptimer () {
 	#Stop the timer
-	Timer="$(($(date +%s)-T))"
+	Timer="$(($(date +%s)-Timer))"
 	TimeElapsed="$(($Timer / 3600))hrs $((($Timer / 60) % 60))min $(($Timer % 60))sec"
 	echo "The backup has finished it took $TimeElapsed"
 }
