@@ -2,7 +2,7 @@
 
 # Project: Rclone backup script
 # Author : houtknots
-# Website: https://houtknots.nl/
+# Website: https://houtknots.com/
 # Github : https://github.com/houtknots
 
 ##########################################################
@@ -31,17 +31,13 @@ fi
 
 function_createfolders () {
 	#Check if needed folders exist and create them if they do not exist
-	if [ ! -d "/etc/backup" ]; then
-       		echo -e "${YELLOW}Creating Backup folder...${NC}"
-		mkdir /etc/backup
+	if [ ! -d "/usr/local/backupscript" ]; then
+       		echo -e "${YELLOW}Creating Backupscript folder...${NC}"
+       		mkdir /usr/local/backupscript
 	fi
-	if [ ! -d "/etc/backup/backupscript" ]; then
-       		echo -e "${YELLOW}Creating SFTP folder...${NC}"
-       		mkdir /etc/backup/backupscript
-	fi
-	if [ ! -d "/etc/backup/backupscript/temp" ]; then
+	if [ ! -d "/usr/local/backupscript/temp" ]; then
 		echo -e "${YELLOW}Creating Temp folder...${NC}"
-		mkdir /etc/backup/backupscript/temp
+		mkdir /usr/local/backupscript/temp
 	fi
 	sleep 1
 	clear
@@ -70,8 +66,8 @@ function_installpackages () {
 	curl https://rclone.org/install.sh | sudo bash
 
 	#Download backupscript from github
-	if [ ! -f "/etc/backup/backupscript/backup.sh" ]; then
-		curl https://raw.githubusercontent.com/houtknots/backupscript-rclone/master/backup.sh -o /etc/backup/backupscript/backup.sh
+	if [ ! -f "/usr/local/backupscript/backup.sh" ]; then
+		curl https://raw.githubusercontent.com/houtknots/backupscript-rclone/master/backup.sh -o /usr/local/backupscript/backup.sh
 	fi
 	clear
 }
@@ -93,7 +89,7 @@ function_newconfig () {
 				fi
 			;;
 	  		n|N)
-				echo "Please edit the backup config directly within the script /etc/backup/backupscripts/backup.sh"
+				echo "Please edit the backup config directly within the script /usr/local/backupscript/backup.sh"
 				newconfig_continue="true"
 				exit 0
 			;;
@@ -150,7 +146,7 @@ function_localfolder () {
 function_tempfolder () {
 	#Ask which files to backup
 	echo -e "${YELLOW}Please enter the ${CYAN}local temporary location${NC} ${YELLOW}the backup will use before uploading and press enter${NC}"
-		read -e -p '[LOCAL TEMPORARY FOLDER]: ' -i "/etc/backup/backupscript/temp" tempfolder
+		read -e -p '[LOCAL TEMPORARY FOLDER]: ' -i "/usr/local/backupscript/temp" tempfolder
 	clear
 }
 
@@ -414,35 +410,29 @@ if [ $confirm_settings_install == "true" ]; then
 	fi
 
 	#Edit the backup.sh file
-	sed -i "s|^localfolder=.*|localfolder=${localfolder}|g" /etc/backup/backupscript/backup.sh #local folder
-	sed -i "s|^tempfolder=.*|tempfolder=${tempfolder}|g" /etc/backup/backupscript/backup.sh #temp folder
-	sed -i "s|^remotefolder=.*|remotefolder=${remotefolder}|g" /etc/backup/backupscript/backup.sh #remote folder
-	sed -i "s|^usezip=.*|usezip=${usezip_value}|g" /etc/backup/backupscript/backup.sh #usezip
-	sed -i "s|^checksum=.*|checksum=${usechecksum_value}|g" /etc/backup/backupscript/backup.sh #checksum
-	sed -i "s|^retention=.*|retention=${retention_value}|g" /etc/backup/backupscript/backup.sh #retention
-	sed -i "s|^retention_daystostore=.*|retention_daystostore=${retention_daystostore}|g" /etc/backup/backupscript/backup.sh #retention
+	sed -i "s|^localfolder=.*|localfolder=${localfolder}|g" /usr/local/backupscript/backup.sh #local folder
+	sed -i "s|^tempfolder=.*|tempfolder=${tempfolder}|g" /usr/local/backupscript/backup.sh #temp folder
+	sed -i "s|^remotefolder=.*|remotefolder=${remotefolder}|g" /usr/local/backupscript/backup.sh #remote folder
+	sed -i "s|^usezip=.*|usezip=${usezip_value}|g" /usr/local/backupscript/backup.sh #usezip
+	sed -i "s|^checksum=.*|checksum=${usechecksum_value}|g" /usr/local/backupscript/backup.sh #checksum
+	sed -i "s|^retention=.*|retention=${retention_value}|g" /usr/local/backupscript/backup.sh #retention
+	sed -i "s|^retention_daystostore=.*|retention_daystostore=${retention_daystostore}|g" /usr/local/backupscript/backup.sh #retention
 
-	sed -i "s|^report_errors=.*|report_errors=${use_notifications}|g" /etc/backup/backupscript/backup.sh #Turn on notifications
+	sed -i "s|^report_errors=.*|report_errors=${use_notifications}|g" /usr/local/backupscript/backup.sh #Turn on notifications
 
-	sed -i "s|^discord_slack_notifications=.*|discord_slack_notifications=${use_discordnotifications}|g" /etc/backup/backupscript/backup.sh #Turn on discord/slack notifications
-	sed -i "s|^discord_slack_webhook=.*|discord_slack_webhook=${notifications_discordwebhook}|g" /etc/backup/backupscript/backup.sh #discordwebhook
+	sed -i "s|^discord_slack_notifications=.*|discord_slack_notifications=${use_discordnotifications}|g" /usr/local/backupscript/backup.sh #Turn on discord/slack notifications
+	sed -i "s|^discord_slack_webhook=.*|discord_slack_webhook=${notifications_discordwebhook}|g" /usr/local/backupscript/backup.sh #discordwebhook
 
 	if [ "$cronjob_install" == "true" ]; then
 		touch /etc/cron.d/backupscript
-		echo "0 3 * * * root bash /etc/backup/backupscript/backup.sh" > /etc/cron.d/backupscript
+		echo "0 3 * * * root bash /usr/local/backupscript/backup.sh" > /etc/cron.d/backupscript
 		systemctl restart crond
 	fi
 fi
 clear
 
-
-#########################################################
-#              Notify User Install Is Done              #
-#########################################################
-
-
 #Echo the user how to test the backup
-echo -e "${GREEN}The backup-script is installed use the following command to run the script ${YELLOW}bash /etc/backup/backupscript/backup.sh${NC}"
-if [ "retention_value" == "true" ]; then echo -e "${GREEN}The backupscript will be ran every day at ${YELLOW}03:00 am${NC}"; fi
+echo -e "${GREEN}The backup-script is installed use the following command to run the script ${YELLOW}bash /usr/local/backupscript/backup.sh${NC}"
+if [ "retention_value" == "true" ]; then echo -e "${GREEN}The backupscript will run every day at ${YELLOW}03:00 am${NC}"; fi
 
 exit 0

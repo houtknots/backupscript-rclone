@@ -13,7 +13,7 @@
 localfolder=/home/
 remotefolder=/backupscript/
 currentdate=$(date +"%Y-%m-%d_%H-%M-%S")
-tempfolder="/etc/backup/backupscript/temp"
+tempfolder="/usr/local/backupscript/temp"
 tempfile="$tempfolder/$currentdate.zip"
 hostname="`hostname`"
 
@@ -68,7 +68,7 @@ function_start_countdowntimer () {
 
 function_clearlog () {
 	#Clear Log Files
-	true > /etc/backup/backupscript/backup.log
+	true > /usr/local/backupscript/backup.log
 }
 
 function_createfolder () {
@@ -92,9 +92,9 @@ function_upload () {
 	#Backup the files to a remote location
 	if [ "$usezip" == "true" ];
 	then
-		rclone copy $tempfile backupscript:$remotefolder --progress -q --log-file=/etc/backup/backupscript/backup.log
+		rclone copy $tempfile backupscript:$remotefolder --progress -q --log-file=/usr/local/backupscript/backup.log
 	else
-		rclone copy $localfolder backupscript:$remotefolder/$currentdate/ --progress -q --log-file=/etc/backup/backupscript/backup.log
+		rclone copy $localfolder backupscript:$remotefolder/$currentdate/ --progress -q --log-file=/usr/local/backupscript/backup.log
 	fi
 }
 
@@ -104,9 +104,9 @@ function_checksum () {
 	then
 		if [ "$usezip" == "true" ];
 		then
-			rclone check $tempfile backupscript:$remotefolder -q --log-file=/etc/backup/backupscript/backup.log
+			rclone check $tempfile backupscript:$remotefolder -q --log-file=/usr/local/backupscript/backup.log
 		else
-			rclone check $localfolder backupscript:$remotefolder/$currentdate/ -q --log-file=/etc/backup/backupscript/backup.log
+			rclone check $localfolder backupscript:$remotefolder/$currentdate/ -q --log-file=/usr/local/backupscript/backup.log
 		fi
 	fi
 }
@@ -121,14 +121,14 @@ function_deltempfiles () {
 			if [ -f "$tempfile" ];
 			then
 				echo -e "${RED}Cleanup failed${NC} - Start the script again with ${YELLOW}-c ${NC}To restart the cleanup proccess"
-				echo -e "${RED}Cleanup failed${NC} - Start the script again with ${YELLOW}-c ${NC}To restart the cleanup proccess" >> /etc/backup/backupscript/backup.log
+				echo -e "${RED}Cleanup failed${NC} - Start the script again with ${YELLOW}-c ${NC}To restart the cleanup proccess" >> /usr/local/backupscript/backup.log
 				exit 1
 			else
 				echo -e "${GREEN}Cleanup Succesfull${NC}"
 			fi
 		else
 			echo -e "${RED}No File found or we had insufficient permissions${NC} - Run the script again with ${YELLOW}-c ${NC}To restart the cleanup proccess"
-			echo -e "${RED}No File found or we had insufficient permissions${NC} - Run the script again with ${YELLOW}-c ${NC}To restart the cleanup proccess" >> /etc/backup/backupscript/backup.log
+			echo -e "${RED}No File found or we had insufficient permissions${NC} - Run the script again with ${YELLOW}-c ${NC}To restart the cleanup proccess" >> /usr/local/backupscript/backup.log
 		fi
 	fi
 }
@@ -136,7 +136,7 @@ function_deltempfiles () {
 function_retention () {
 	if [ "$retention" == "true" ]; 
 	then
-		rclone delete backupscript:$remotefolder --min-age $retention_daystostore\d --progress -q --log-file=/etc/backup/backupscript/backup.log
+		rclone delete backupscript:$remotefolder --min-age $retention_daystostore\d --progress -q --log-file=/usr/local/backupscript/backup.log
 	else
 		echo -e "Retention function has not been enabled, skipping the retention process"
 	fi
@@ -161,7 +161,7 @@ function_report_errors () {
 		if [ "$discord_slack_notifications" == "true" ];
 		then
 			#Check if the backupscript logs are empty
-			if [ -s "/etc/backup/backupscript/backup.log" ]
+			if [ -s "/usr/local/backupscript/backup.log" ]
 			then
 				curl -H "Content-Type: application/json" -X POST -d "{\"username\":\"Backupscript\", \"embeds\":[{\"title\":\"$hostname\",\"description\":\"The backup of $currentdate failed it took $TimeElapsed\",\"color\":16711680}]}" $discord_slack_webhook
 			else
@@ -172,11 +172,11 @@ function_report_errors () {
 }
 
 function_historylog () {
-	if [ -s "/etc/backup/backupscript/history.log" ]
+	if [ -s "/usr/local/backupscript/history.log" ]
 	then
-		echo [FAILED] - $currentdate - Please check the backup.log file to see the errors >> /etc/backup/backupscript/history.log
+		echo [FAILED] - $currentdate - Please check the backup.log file to see the errors >> /usr/local/backupscript/history.log
 	else
-		echo [FINISHED] - $currentdate >> /etc/backup/backupscript/history.log
+		echo [FINISHED] - $currentdate >> /usr/local/backupscript/history.log
 	fi
 }
 #########################################################

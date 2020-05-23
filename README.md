@@ -6,11 +6,11 @@ Run the following commando to download and run the installer
 bash <(curl https://raw.githubusercontent.com/houtknots/backupscript-rclone/master/installer.sh)
 ```
 
-The backup script will be installed in ```/etc/backup/backupscript/```
+The backup script will be installed in ```/usr/local/backupscript/```
 
 If you want to run the script manually u can use the command below
 ```bash
-sudo bash /etc/backup/backupscript/backup.sh
+sudo bash /usr/local/backupscript/backup.sh
 ```
 
 # Current Features
