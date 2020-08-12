@@ -84,7 +84,7 @@ function_createfolder () {
 function_zipfiles () {
 	if [ "$usezip" == "true" ];
 	then
-		zip -r $tempfile $localfolder
+		zip -r $tempfile $localfolder 2>&1 | pv -lep -s $(ls -Rl1 $localfolder | egrep -c '^([-d][rwx-]{9})') > /dev/null
 	fi
 }
 
