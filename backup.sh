@@ -13,7 +13,7 @@
 localfolder=/home/
 remotefolder=/backupscript/
 currentdate=$(date +"%Y-%m-%d_%H-%M-%S")
-tempfolder="/usr/local/backupscript/temp"
+tempfolder="/tmp/backupscript/"
 tempfile="$tempfolder/$currentdate.zip"
 hostname="`hostname`"
 
@@ -136,7 +136,7 @@ function_deltempfiles () {
 function_retention () {
 	if [ "$retention" == "true" ]; 
 	then
-		rclone delete backupscript:$remotefolder --min-age $retention_daystostore\d --progress -q --log-file=/usr/local/backupscript/backup.log
+		rclone delete backupscript:$remotefolder --min-age $retention_daystostore\d --progress --rmdirs -q --log-file=/usr/local/backupscript/backup.log
 	else
 		echo -e "Retention function has not been enabled, skipping the retention process"
 	fi

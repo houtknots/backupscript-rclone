@@ -35,12 +35,6 @@ function_createfolders () {
        		echo -e "${YELLOW}Creating Backupscript folder...${NC}"
        		mkdir /usr/local/backupscript
 	fi
-	if [ ! -d "/usr/local/backupscript/temp" ]; then
-		echo -e "${YELLOW}Creating Temp folder...${NC}"
-		mkdir /usr/local/backupscript/temp
-	fi
-	sleep 1
-	clear
 }
 
 function_installpackages () {
@@ -69,7 +63,6 @@ function_installpackages () {
 	if [ ! -f "/usr/local/backupscript/backup.sh" ]; then
 		curl https://raw.githubusercontent.com/houtknots/backupscript-rclone/master/backup.sh -o /usr/local/backupscript/backup.sh
 	fi
-	clear
 }
 
 
@@ -425,7 +418,7 @@ if [ $confirm_settings_install == "true" ]; then
 
 	if [ "$cronjob_install" == "true" ]; then
 		touch /etc/cron.d/backupscript
-		echo "0 3 * * * root bash /usr/local/backupscript/backup.sh" > /etc/cron.d/backupscript
+		echo "0 $(( RANDOM % 24 )) * * * root bash /usr/local/backupscript/backup.sh" > /etc/cron.d/backupscript
 		systemctl restart crond
 	fi
 fi
