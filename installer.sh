@@ -43,7 +43,7 @@ function_installpackages () {
 		osInfo[/etc/redhat-release]=yum
 		osInfo[/etc/arch-release]=pacman
 		osInfo[/etc/gentoo-release]=emerge
-		osInfo[/etc/debian_version]=apt-get
+		osInfo[/etc/debian_version]=apt
 
 	for f in ${!osInfo[@]}
 	do
@@ -63,6 +63,7 @@ function_installpackages () {
 	if [ ! -f "/usr/local/backupscript/backup.sh" ]; then
 		curl https://raw.githubusercontent.com/houtknots/backupscript-rclone/master/backup.sh -o /usr/local/backupscript/backup.sh
 	fi
+	clear
 }
 
 
@@ -139,7 +140,7 @@ function_localfolder () {
 function_tempfolder () {
 	#Ask which files to backup
 	echo -e "${YELLOW}Please enter the ${CYAN}local temporary location${NC} ${YELLOW}the backup will use before uploading and press enter${NC}"
-		read -e -p '[LOCAL TEMPORARY FOLDER]: ' -i "/usr/local/backupscript/temp" tempfolder
+		read -e -p '[LOCAL TEMPORARY FOLDER]: ' -i "/tmp/backupscript/" tempfolder
 	clear
 }
 
